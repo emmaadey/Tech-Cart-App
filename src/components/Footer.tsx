@@ -3,7 +3,7 @@ import { Link } from "react-router";
 const Footer = () => {
   return (
     <footer className="bg-[#5B1E2D] text-white">
-      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 lg:grid-cols-4 lg:px-8">
+      <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 md:grid-cols-2 ">
         {/* Brand */}
         <div>
           <h2 className="text-2xl font-bold">
@@ -87,7 +87,7 @@ const Footer = () => {
       </div>
 
       <div className="border-t border-white/10">
-        <div className="mx-auto max-w-7xl px-4 py-5 text-center text-sm text-white/60 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-5 text-center text-sm text-white/60 sm:px-6">
           © 2026 GadgetCart. All rights reserved.
         </div>
       </div>

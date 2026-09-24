@@ -1,13 +1,14 @@
 import { FaStar, FaShoppingCart } from "react-icons/fa";
 import type { Product } from "../product.type";
-
+import { useCart } from "../context/CartContext";
 interface ProductCardProps {
   product: Product;
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
+  const { addToCart } = useCart();
   return (
-    <div className="overflow-hidden rounded-2xl bg-white shadow-sm">
+    <div className="flex h-full flex-col overflow-hidden rounded-2xl bg-white shadow-sm">
       <div className="relative">
         <img
           src={product.image}
@@ -19,8 +20,7 @@ export default function ProductCard({ product }: ProductCardProps) {
           {product.category}
         </span>
       </div>
-
-      <div className="p-5">
+      <div className="flex flex-1 flex-col p-5">
         <p className="text-sm text-gray-500">{product.brand}</p>
 
         <h3 className="mt-1 text-lg font-semibold text-gray-900">
@@ -33,14 +33,15 @@ export default function ProductCard({ product }: ProductCardProps) {
           <span className="text-sm text-gray-600">{product.rating}</span>
         </div>
 
-        <div className="mt-4 flex items-center justify-between">
+        <div className="mt-auto pt-4">
           <p className="text-xl font-bold text-[#5B1E2D]">
             ₦{product.price.toLocaleString()}
           </p>
 
           <button
             type="button"
-            className="flex items-center gap-2 rounded-lg bg-[#5B1E2D] px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
+            onClick={() => addToCart(product.id)}
+            className="mt-3 flex w-full items-center justify-center gap-2 whitespace-nowrap rounded-lg bg-[#5B1E2D] px-4 py-3 text-sm font-medium text-white transition hover:opacity-90"
           >
             <FaShoppingCart size={18} />
             Add to Cart

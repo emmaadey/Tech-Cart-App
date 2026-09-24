@@ -4,8 +4,13 @@ import { FaArrowLeft, FaTrash } from "react-icons/fa";
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
+import { useCartSummary } from "../useCartSummary";
+import { useCart } from "../context/CartContext";
 
 const Cart = () => {
+  const { count, updateQty, removeFromCart } = useCart();
+  const { cartProducts, subtotal, delivery, total } = useCartSummary();
+
   return (
     <div className="min-h-screen bg-[#FAF7F7]">
       <Navbar />
@@ -25,66 +30,64 @@ const Cart = () => {
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-900">Cart Items</h2>
 
-              <span className="text-sm text-gray-500">2 items</span>
+              <span className="text-sm text-gray-500">
+                {count} {count === 1 ? "item" : "items"}
+              </span>
             </div>
 
-            {/* Item */}
-            <div className="mt-7 flex flex-col gap-5 border-b border-gray-100 pb-7 sm:flex-row sm:items-center">
-              <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-xl bg-[#F8F0F2] p-3">
-                <img
-                  src="https://placehold.co/200x200/f8f0f2/5b1e2d?text=iPhone"
-                  alt="iPhone"
-                  className="h-full w-full object-contain"
+            {cartProducts.length === 0 && (
+              <p className="mt-7 text-gray-500">Your cart is empty.</p>
+            )}
+
+            {cartProducts.map(({ product, qty }) => (
+              <div
+                key={product.id}
+                className="flex flex-col gap-5 border-b border-gray-100 py-7 sm:flex-row sm:items-center"
+              >
+                <div className="h-28 w-28 shrink-0 overflow-hidden rounded-xl bg-[#F8F0F2]">
+                  <img
+                    src={product.image}
+                    alt={product.name}
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+
+                <div className="flex-1">
+                  <p className="text-sm text-gray-400">{product.brand}</p>
+
+                  <h3 className="mt-1 font-semibold text-gray-900">
+                    {product.name}
+                  </h3>
+
+                  <p className="mt-2 font-bold text-[#5B1E2D]">
+                    ₦{product.price.toLocaleString()}
+                  </p>
+                </div>
+
+                <NumberInput
+                  min={1}
+                  max={product.stock}
+                  value={qty}
+                  onChange={(value) =>
+                    updateQty(product.id, Number(value) || 1)
+                  }
+                  className="w-24"
                 />
+
+                <Button
+                  variant="subtle"
+                  color="red"
+                  px={8}
+                  onClick={() => removeFromCart(product.id)}
+                >
+                  <FaTrash size={18} />
+                </Button>
               </div>
-
-              <div className="flex-1">
-                <p className="text-sm text-gray-400">Apple</p>
-
-                <h3 className="mt-1 font-semibold text-gray-900">
-                  iPhone 17 Pro
-                </h3>
-
-                <p className="mt-2 font-bold text-[#5B1E2D]">₦1,500,000</p>
-              </div>
-
-              <NumberInput min={1} defaultValue={1} className="w-24" />
-
-              <Button variant="subtle" color="red" px={8}>
-                <FaTrash size={18} />
-              </Button>
-            </div>
-
-            {/* Second Item */}
-            <div className="flex flex-col gap-5 py-7 sm:flex-row sm:items-center">
-              <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-xl bg-[#F8F0F2] p-3">
-                <img
-                  src="https://placehold.co/200x200/f8f0f2/5b1e2d?text=AirPods"
-                  alt="AirPods"
-                  className="h-full w-full object-contain"
-                />
-              </div>
-
-              <div className="flex-1">
-                <p className="text-sm text-gray-400">Apple</p>
-
-                <h3 className="mt-1 font-semibold text-gray-900">
-                  AirPods Pro
-                </h3>
-
-                <p className="mt-2 font-bold text-[#5B1E2D]">₦350,000</p>
-              </div>
-
-              <NumberInput min={1} defaultValue={1} className="w-24" />
-
-              <Button variant="subtle" color="red" px={8}>
-                <FaTrash size={18} />
-              </Button>
-            </div>
+            ))}
 
             <Link
               to="/products"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-[#5B1E2D]"
+              className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[#5B1E2D]"
             >
               <FaArrowLeft size={17} />
               Continue Shopping
@@ -98,12 +101,16 @@ const Cart = () => {
             <div className="mt-7 space-y-4 text-sm">
               <div className="flex justify-between">
                 <span className="text-gray-500">Subtotal</span>
-                <span className="font-medium">₦1,850,000</span>
+                <span className="font-medium">
+                  ₦{subtotal.toLocaleString()}
+                </span>
               </div>
 
               <div className="flex justify-between">
                 <span className="text-gray-500">Delivery</span>
-                <span className="font-medium">₦10,000</span>
+                <span className="font-medium">
+                  ₦{delivery.toLocaleString()}
+                </span>
               </div>
             </div>
 
@@ -112,7 +119,7 @@ const Cart = () => {
             <div className="flex justify-between">
               <span className="font-semibold">Total</span>
               <span className="text-xl font-bold text-[#5B1E2D]">
-                ₦1,860,000
+                ₦{total.toLocaleString()}
               </span>
             </div>
 

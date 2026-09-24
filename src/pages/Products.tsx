@@ -1,13 +1,94 @@
-import { Select, Button } from "@mantine/core";
-import { FaSlidersH, FaChevronDown } from "react-icons/fa";
+import { Button } from "@mantine/core";
+import { FaSlidersH } from "react-icons/fa";
 
 import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import SearchBar from "../components/SearchBar";
 import ProductGrid from "../components/ProductGrid";
 import { products } from "../products";
+import { useSearchParams } from "react-router";
+
+const categories = [...new Set(products.map((product) => product.category))];
+const brands = [...new Set(products.map((product) => product.brand))];
+const PAGE_SIZE = 8;
 
 const Products = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Handle Search
+  const search = searchParams.get("search") || "";
+
+  const handleSearch = (value: string) => {
+    const params = new URLSearchParams(searchParams);
+
+    if (value) {
+      params.set("search", value);
+    } else {
+      params.delete("search");
+    }
+    params.delete("page");
+    setSearchParams(params);
+  };
+
+  // Handle Category
+  const selectedCategories = searchParams.getAll("category");
+
+  const handleCategory = (category: string) => {
+    const params = new URLSearchParams(searchParams);
+
+    const updated = selectedCategories.includes(category)
+      ? selectedCategories.filter((item) => item !== category)
+      : [...selectedCategories, category];
+
+    params.delete("category");
+    updated.forEach((item) => params.append("category", item));
+    params.delete("page");
+    setSearchParams(params);
+  };
+
+  // Handle Brands
+  const selectedBrands = searchParams.getAll("brand");
+
+  const handleBrand = (brand: string) => {
+    const params = new URLSearchParams(searchParams);
+
+    const updated = selectedBrands.includes(brand)
+      ? selectedBrands.filter((item) => item !== brand)
+      : [...selectedBrands, brand];
+
+    params.delete("brand");
+    updated.forEach((item) => params.append("brand", item));
+    params.delete("page");
+    setSearchParams(params);
+  };
+
+  // Filtered Products
+  const filteredProducts = products.filter((product) => {
+    const matchesSearch = product.name
+      .toLowerCase()
+      .includes(search.toLowerCase());
+
+    const matchesCategory =
+      selectedCategories.length === 0 ||
+      selectedCategories.includes(product.category);
+
+    const matchesBrand =
+      selectedBrands.length === 0 || selectedBrands.includes(product.brand);
+
+    return matchesSearch && matchesCategory && matchesBrand;
+  });
+
+  const page = Math.max(1, Number(searchParams.get("page")) || 1);
+
+  const visibleProducts = filteredProducts.slice(0, page * PAGE_SIZE);
+  const hasMore = visibleProducts.length < filteredProducts.length;
+
+  const handleLoadMore = () => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", String(page + 1));
+    setSearchParams(params);
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF7F7]">
       <Navbar />
@@ -32,7 +113,7 @@ const Products = () => {
       <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         {/* Search */}
         <div className="mx-auto max-w-2xl">
-          <SearchBar />
+          <SearchBar value={search} onChange={handleSearch} />
         </div>
 
         <div className="mt-10 grid gap-8 lg:grid-cols-[240px_1fr]">
@@ -48,35 +129,17 @@ const Products = () => {
               <p className="text-sm font-semibold text-gray-800">Category</p>
 
               <div className="mt-4 flex flex-col gap-3 text-sm text-gray-600">
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  Phones
-                </label>
-
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  Laptops
-                </label>
-
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  Headphones
-                </label>
-
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  Cameras
-                </label>
-
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  Televisions
-                </label>
-
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  Gaming
-                </label>
+                {categories.map((category) => (
+                  <label key={category} className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      className="accent-[#5B1E2D]"
+                      checked={selectedCategories.includes(category)}
+                      onChange={() => handleCategory(category)}
+                    />
+                    {category}
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -86,25 +149,17 @@ const Products = () => {
               <p className="text-sm font-semibold text-gray-800">Brand</p>
 
               <div className="mt-4 flex flex-col gap-3 text-sm text-gray-600">
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  Apple
-                </label>
-
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  Samsung
-                </label>
-
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  Sony
-                </label>
-
-                <label className="flex items-center gap-3">
-                  <input type="checkbox" className="accent-[#5B1E2D]" />
-                  LG
-                </label>
+                {brands.map((brand) => (
+                  <label key={brand} className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      className="accent-[#5B1E2D]"
+                      checked={selectedBrands.includes(brand)}
+                      onChange={() => handleBrand(brand)}
+                    />
+                    {brand}
+                  </label>
+                ))}
               </div>
             </div>
           </aside>
@@ -114,31 +169,25 @@ const Products = () => {
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <p className="text-sm text-gray-500">
                 Showing{" "}
-                <strong className="text-gray-900">{products.length}</strong>{" "}
+                <strong className="text-gray-900">
+                  {filteredProducts.length}
+                </strong>{" "}
                 products
               </p>
-
-              <Select
-                placeholder="Sort by"
-                data={[
-                  "Newest",
-                  "Price: Low to High",
-                  "Price: High to Low",
-                  "Highest Rated",
-                ]}
-                rightSection={<FaChevronDown size={16} />}
-                className="w-full sm:w-56"
-              />
             </div>
 
-            <ProductGrid products={products} />
-
-            {/* Pagination placeholder */}
-            <div className="mt-12 flex justify-center">
-              <Button variant="outline" color="#5B1E2D">
-                Load More
-              </Button>
-            </div>
+            <ProductGrid products={visibleProducts} />
+            {hasMore && (
+              <div className="mt-12 flex justify-center">
+                <Button
+                  variant="outline"
+                  onClick={handleLoadMore}
+                  className="text-black! hover:text-[#5B1E2D]! hover:underline hover:underline-offset-1!"
+                >
+                  Load More
+                </Button>
+              </div>
+            )}
           </section>
         </div>
       </main>
